@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { useEffect, useRef } from 'react';
 import { Engine, Render, Bodies, World } from 'matter-js';
-import { color } from 'framer-motion';
 
 interface Props {
   numDrops: number;

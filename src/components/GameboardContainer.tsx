@@ -1,5 +1,6 @@
 import { Gameboard } from './Gameboard';
 import { PinkoBoard } from './plinko/PlinkoGameboard';
+import { Setup } from './plinko/PlinkoGameboard2';
 import styles from '../styles/GameboardContainer.module.css';
 import {
   Button,
@@ -169,6 +170,7 @@ export function GameboardContainer({
     );
   }
 
+  return <Setup />
   return <PinkoBoard numDrops={10}/>
 
   return (
