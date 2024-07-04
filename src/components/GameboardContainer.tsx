@@ -1,17 +1,7 @@
 import { Gameboard } from './Gameboard';
 import styles from '../styles/GameboardContainer.module.css';
-import {
-  Button,
-  Link,
-  Show,
-  useDisclosure,
-} from '@chakra-ui/react';
-import {
-  MouseEventHandler,
-  useContext,
-  useMemo,
-  useState,
-} from 'react';
+import { Button, Link, Show, useDisclosure } from '@chakra-ui/react';
+import { MouseEventHandler, useContext, useMemo, useState } from 'react';
 
 import { GameContext } from '@/contexts/GameContextProvider';
 import { ModalBuyNFT } from './ModalBuyNFT';
@@ -266,7 +256,6 @@ export function GameboardContainer({
             <span className={styles.tooltipText}>
               Cheddy PowerUp NFT provides in-game features
             </span>
-
 
             <Show below="lg">
               <Button
