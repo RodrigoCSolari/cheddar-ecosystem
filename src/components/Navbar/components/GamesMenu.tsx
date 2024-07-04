@@ -63,7 +63,12 @@ export default function GamesMenu() {
         >
           Checkers
           <Box minW="30px" ml="10px">
-            <Img src={checkersIcon} alt="" width="24px" height="24px" />
+            <Img
+              src={'assets/checkers-icon.png'}
+              alt=""
+              width="24px"
+              height="24px"
+            />
           </Box>
         </MenuItem>
         <MenuItem
