@@ -15,14 +15,14 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 18
 
       - name: Install dependencies
         run: |
-          npm install
+          yarn install
 
       - name: Build the app
-        run: npm run build
+        run: yarn build
 
       - name: Deploy to test.midominio.com
         uses: peaceiris/actions-gh-pages@v3
@@ -43,14 +43,14 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 18
 
       - name: Install dependencies
         run: |
-          npm install
+          yarn install
 
       - name: Build the app
-        run: npm run build
+        run: yarn build
 
       - name: Deploy to midominio.com
         uses: peaceiris/actions-gh-pages@v3
