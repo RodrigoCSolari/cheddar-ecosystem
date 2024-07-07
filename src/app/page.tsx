@@ -6,6 +6,10 @@ import { useWalletSelector } from '@/contexts/WalletSelectorContext';
 import { ntoy, yton } from '@/contracts/contractUtils';
 import { useGetCheddarBalance, useGetCheddarMetadata } from '@/hooks/cheddar';
 import { useGetIsAllowedResponse as useGetIsAllowedResponse } from '@/hooks/maze';
+import Navbar from '@/components/Navbar/containers/Navbar';
+import { SocialMedia } from '@/components/SocialMediaContainer';
+import { Hide, Show } from '@chakra-ui/react';
+import ModalWelcome from '@/components/ModalWelcome';
 
 export default function Home() {
   const {
@@ -89,17 +93,23 @@ export default function Home() {
 
   return (
     <>
+      <Navbar cheddarBalanceData={cheddarBalanceData} />
       {initialized() && ( // Replace `condition` with your actual condition
         <GameboardContainer
           remainingMinutes={Math.floor(remainingTime / 60)}
           remainingSeconds={remainingTime % 60}
           handlePowerUpClick={handlePowerUpClick}
           cellSize={cellSize}
+          cheddarBalanceData={cheddarBalanceData}
           hasEnoughBalance={hasEnoughBalance}
           minCheddarRequired={yton(minCheddarRequired.toString())}
           isAllowedResponse={isAllowedResponse}
         />
       )}
+      <Hide below="lg">
+        <SocialMedia />
+      </Hide>
+      <ModalWelcome />
     </>
   );
 }

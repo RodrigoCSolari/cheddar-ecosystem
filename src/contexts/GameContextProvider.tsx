@@ -22,6 +22,8 @@ import {
 import { PlayerScoreData } from '@/components/Scoreboard';
 import { NFT, NFTCheddarContract } from '@/contracts/nftCheddarContract';
 import { useGetCheddarNFTs } from '@/hooks/cheddar';
+import { useDisclosure } from '@chakra-ui/react';
+import { getNFTs } from '@/contracts/cheddarCalls';
 
 interface props {
   children: ReactNode;
@@ -125,6 +127,9 @@ interface GameContextProps {
   pathLength: number;
 
   handleKeyPress(event: KeyboardEvent<HTMLDivElement>): void;
+  handleArrowPress(
+    direction: 'ArrowUp' | 'ArrowDown' | 'ArrowLeft' | 'ArrowRight'
+  ): void;
 
   restartGame(): void;
 
@@ -141,8 +146,21 @@ interface GameContextProps {
   pendingCheddarToMint: number;
   endGameResponse: any;
 
+  nfts: NFT[];
+
+  showMovementButtons: boolean;
+  setShowMovementButtons: React.Dispatch<React.SetStateAction<boolean>>;
+
   scoreboardResponse: ScoreboardResponse | null | undefined;
   isLoadingScoreboard: boolean;
+
+  videoModalOpened: boolean;
+  onOpenVideoModal: () => void;
+  onCloseVideoModal: () => void;
+
+  isScoreboardOpen: boolean;
+  onOpenScoreboard: () => void;
+  onCloseScoreboard: () => void;
 }
 
 export const GameContext = createContext<GameContextProps>(
@@ -151,6 +169,12 @@ export const GameContext = createContext<GameContextProps>(
 
 export const GameContextProvider = ({ children }: props) => {
   const gameOverRefSent = useRef(false);
+
+  const {
+    isOpen: isScoreboardOpen,
+    onOpen: onOpenScoreboard,
+    onClose: onCloseScoreboard,
+  } = useDisclosure();
 
   const [mazeData, setMazeData] = useState([[]] as MazeTileData[][]);
   const [pathLength, setPathLength] = useState(0);
@@ -195,8 +219,16 @@ export const GameContextProvider = ({ children }: props) => {
   const [saveResponse, setSaveResponse] = useState();
   const [endGameResponse, setEndGameResponse] = useState();
 
+  const [showMovementButtons, setShowMovementButtons] = useState(true);
+
   // const [backgroundImage, setBackgroundImage] = useState('');
   // const [rarity, setRarity] = useState('');
+
+  const {
+    isOpen: videoModalOpened,
+    onOpen: onOpenVideoModal,
+    onClose: onCloseVideoModal,
+  } = useDisclosure();
 
   const mazeRows = 11;
   const mazeCols = 9;
@@ -232,27 +264,19 @@ export const GameContextProvider = ({ children }: props) => {
   }, [remainingTime]);
 
   const { accountId, selector } = useWalletSelector();
-  const [contract, setContract] = useState<NFTCheddarContract | undefined>();
   const [nfts, setNFTs] = useState<NFT[]>([]);
   const { data: cheddarNFTsData, isLoading: isLoadingCheddarNFTs } =
     useGetCheddarNFTs();
 
   useEffect(() => {
-    if (!selector.isSignedIn()) {
+    if (accountId) {
+      getNFTs(accountId).then((nfts) => {
+        setNFTs(nfts);
+      });
+    } else {
       setNFTs([]);
-      return;
     }
-    selector.wallet().then((wallet) => {
-      const contract = new NFTCheddarContract(wallet);
-      setContract(contract);
-
-      if (accountId) {
-        contract.getNFTs(accountId).then((nfts) => {
-          setNFTs(nfts);
-        });
-      }
-    });
-  }, [selector]);
+  }, [accountId]);
 
   // Function to select a random color set, background image, and rarity
   const selectRandomColorSet = () => {
@@ -669,7 +693,7 @@ export const GameContextProvider = ({ children }: props) => {
     if (timerStarted && !gameOverFlag && startTimestamp) {
       intervalId = setInterval(() => {
         setRemainingTime((prevTime) => {
-          if (prevTime === 0 && intervalId) {
+          if (prevTime <= 0 && intervalId) {
             // if (intervalId && true) {
             clearInterval(intervalId);
             setStartTimestamp(null);
@@ -690,15 +714,13 @@ export const GameContextProvider = ({ children }: props) => {
     }; // Cleanup function to clear interval on unmount or when timer conditions change
   }, [timerStarted, gameOverFlag]);
 
-  // Function to handle key press events
-  function handleKeyPress(event: KeyboardEvent<HTMLDivElement>) {
+  function handleMoveByArrow(direction: string) {
     if (gameOverFlag) return; // If game over, prevent further movement
 
-    const key = event.key;
     let newX = playerPosition.x;
     let newY = playerPosition.y;
 
-    switch (key) {
+    switch (direction) {
       case 'ArrowUp':
         newY--;
         setDirection('up');
@@ -723,6 +745,18 @@ export const GameContextProvider = ({ children }: props) => {
     // Update last cell coordinates
     setLastCellX(playerPosition.x);
     setLastCellY(playerPosition.y);
+  }
+
+  // Function to handle key press events
+  function handleKeyPress(event: KeyboardEvent<HTMLDivElement>) {
+    const key = event.key;
+    handleMoveByArrow(key);
+  }
+
+  function handleArrowPress(
+    direction: 'ArrowUp' | 'ArrowDown' | 'ArrowLeft' | 'ArrowRight'
+  ) {
+    handleMoveByArrow(direction);
   }
 
   function calculateBlurRadius(cellX: number, cellY: number) {
@@ -816,28 +850,31 @@ export const GameContextProvider = ({ children }: props) => {
   }
 
   const handleTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
-    // event.preventDefault(); // Prevent screen scroll
-    const touches = event.touches;
-    const initialTouch = touches[0] as Touch;
+    if (!showMovementButtons) {
+      // event.preventDefault(); // Prevent screen scroll
+      const touches = event.touches;
+      const initialTouch = touches[0] as Touch;
 
-    const initialSquareId = getSquareIdFromTouch(initialTouch);
+      const initialSquareId = getSquareIdFromTouch(initialTouch);
 
-    if (!gameOverFlag) moveIfValid(initialSquareId!);
+      if (!gameOverFlag) moveIfValid(initialSquareId!);
+    }
   };
 
   const handleTouchMove = (event: React.TouchEvent<HTMLDivElement>) => {
-    console.log('Touch move');
-    event.preventDefault(); // Prevent screen scroll
-    const touches = event.touches;
+    if (!showMovementButtons) {
+      event.preventDefault(); // Prevent screen scroll
+      const touches = event.touches;
 
-    // Calculate touchedSquares
-    for (let i = 0; i < touches.length; i++) {
-      const currentTouch = touches[i] as Touch;
+      // Calculate touchedSquares
+      for (let i = 0; i < touches.length; i++) {
+        const currentTouch = touches[i] as Touch;
 
-      const tileId = getSquareIdFromTouch(currentTouch);
+        const tileId = getSquareIdFromTouch(currentTouch);
 
-      if (!gameOverFlag && tileId) {
-        moveIfValid(tileId);
+        if (!gameOverFlag && tileId) {
+          moveIfValid(tileId);
+        }
       }
     }
   };
@@ -907,6 +944,7 @@ export const GameContextProvider = ({ children }: props) => {
         totalCells,
         pathLength: pathLength,
         handleKeyPress,
+        handleArrowPress,
         restartGame,
         calculateBlurRadius,
         handleTouchStart,
@@ -916,8 +954,18 @@ export const GameContextProvider = ({ children }: props) => {
         hasWon,
         pendingCheddarToMint,
         endGameResponse,
+        videoModalOpened,
+        onOpenVideoModal,
+        onCloseVideoModal,
+        nfts,
+
+        showMovementButtons,
+        setShowMovementButtons,
         scoreboardResponse,
         isLoadingScoreboard,
+        isScoreboardOpen,
+        onOpenScoreboard,
+        onCloseScoreboard,
       }}
     >
       {children}

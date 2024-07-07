@@ -9,6 +9,7 @@ const { cheddarToken, cheddarNft } = getConfig().contracts;
 const tokenViewMethods = {
   ftBalanceOf: 'ft_balance_of',
   ftMetadata: 'ft_metadata',
+  ftTotalSupply: 'ft_total_supply',
 };
 
 const nftViewMethods = {
@@ -20,6 +21,10 @@ export const getCheddarBalance = async (accountId: string): Promise<bigint> => {
   return view(cheddarToken, tokenViewMethods.ftBalanceOf, {
     account_id: accountId,
   }).then(BigInt);
+};
+
+export const getTotalSupply = async (): Promise<bigint> => {
+  return view(cheddarToken, tokenViewMethods.ftTotalSupply).then(BigInt);
 };
 
 export const getCheddarMetadata = async (): Promise<Metadata> => {

@@ -74,10 +74,11 @@ export function encodeUTF8(arr: Uint8Array): string {
 }
 
 export function yton(
-  yoctos: string,
+  yoctos: string | bigint,
   token_decimals: number = 24,
   decimals: number = 5
 ) {
+  yoctos = yoctos.toString();
   if (!yoctos) return 0;
   if (yoctos.indexOf('.') !== -1)
     throw new Error("a yocto string can't have a decimal point: " + yoctos);

@@ -1,5 +1,5 @@
 import { getConfig } from '@/configs/config';
-import { ModalContainer } from './FeedbackModal';
+import { ModalContainer } from './ModalContainer';
 import { ListItem, OrderedList, UnorderedList } from '@chakra-ui/react';
 import Link from 'next/link';
 

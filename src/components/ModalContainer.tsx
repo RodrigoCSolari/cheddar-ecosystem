@@ -116,7 +116,7 @@ export const ModalContainer = ({
             )}
           </HStack>
         </ModalBody>
-        <ModalFooter>{footerText ?? ''}</ModalFooter>
+        {footerText && <ModalFooter>{footerText}</ModalFooter>}
       </ModalContent>
     </Modal>
   );
